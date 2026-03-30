@@ -1,10 +1,10 @@
+from typing import Optional, List
 import requests
 import urllib3
 import time
 import os
 import sys
 import sqlite3
-from typing import Optional, List
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone, timedelta
 from threading import Lock
