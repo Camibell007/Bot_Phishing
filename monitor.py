@@ -4,6 +4,7 @@ import time
 import os
 import sys
 import sqlite3
+from typing import Optional, List
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone, timedelta
 from threading import Lock
@@ -166,7 +167,7 @@ def enviar_telegram(mensaje: str):
 # -------------------------------------------------------
 # Descarga de URL phishing
 # -------------------------------------------------------
-def descargar_url(url: str) -> bytes | None:
+def descargar_url(url: str) -> Optional[bytes]:
     try:
         r = _analysis_session.get(url, timeout=DOWNLOAD_TO, stream=False)
         if r.status_code == 200:
@@ -179,7 +180,7 @@ def descargar_url(url: str) -> bytes | None:
 # -------------------------------------------------------
 # Feeds
 # -------------------------------------------------------
-def request_feed(url: str, retries: int = 3, timeout: int = 20) -> str | None:
+def request_feed(url: str, retries: int = 3, timeout: int = 20) -> Optional[str]:
     for i in range(retries):
         try:
             r = _feed_session.get(url, timeout=timeout)
@@ -192,14 +193,14 @@ def request_feed(url: str, retries: int = 3, timeout: int = 20) -> str | None:
     return None
 
 
-def obtener_openphish() -> list[str]:
+def obtener_openphish() -> List[str]:
     texto = request_feed(OPENPHISH_FEED)
     if not texto:
         return []
     return [l.strip() for l in texto.splitlines() if l.strip().startswith("http")]
 
 
-def obtener_phishtank(limit: int = 100) -> list[str]:
+def obtener_phishtank(limit: int = 100) -> List[str]:
     texto = request_feed(PHISHTANK_FEED, timeout=30)
     if not texto:
         return []
@@ -293,7 +294,7 @@ def run_monitor():
                 executor.submit(obtener_phishtank): "PhishTank",
             }
 
-            urls_por_fuente: list[tuple[str, str]] = []
+            urls_por_fuente: List[tuple[str, str]] = []
             for fut in as_completed(feed_futures):
                 fuente = feed_futures[fut]
                 try:
